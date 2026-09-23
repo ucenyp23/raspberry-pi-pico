@@ -1,0 +1,1 @@
+Blink the Raspberry Pi Pico build in LED every second.

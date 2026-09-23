@@ -11,8 +11,6 @@ def main():
         
         led.duty_u16(adc_value)
         
-        print(f"ADC: {adc_value} -> Brightness: {int(adc_value / 65535 * 100)}%")
-        
         sleep_ms(100)
 
 if __name__ == '__main__':

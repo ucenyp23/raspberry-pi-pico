@@ -1,2 +1,2 @@
-GP0 - 180 Ohm Resistor - Red diode - GND
-ADC0 - Potentiometer - 3V3(OUT)/GND
+GP0 -> 180 Ohm Resistor -> Red diode -> GND
+3V3(OUT)/GND -> Potentiometer -> ADC0

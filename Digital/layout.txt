@@ -1,2 +1,2 @@
-GP0 - 180 Ohm Resistor - Red diode - GND
-GP1 - Button - GND
+GP0 -> 180 Ohm Resistor -> Red diode -> GND
+GP1 -> Button -> GND

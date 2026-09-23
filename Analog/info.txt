@@ -1,0 +1,1 @@
+It takes value providen on pin ADC0 and sets that as the brightness of the LED.
