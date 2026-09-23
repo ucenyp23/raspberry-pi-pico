@@ -1,14 +1,1 @@
-from machine import Pin
-from utime import sleep
-
-pin = Pin("LED", Pin.OUT)
-
-print("LED starts flashing...")
-while True:
-    try:
-        pin.toggle()
-        sleep(1) # sleep 1sec
-    except KeyboardInterrupt:
-        break
-pin.off()
-print("Finished.")
+If button is pressed it switches the LED value to the the opossite state it is in and sends it over UART to the secondary Pico. It start off.
