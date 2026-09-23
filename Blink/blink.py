@@ -7,7 +7,7 @@ def main():
     while True:
         try:
             pin.toggle()
-            sleep(1) # sleep 1sec
+            sleep(1)
         except KeyboardInterrupt:
             break
     pin.off()
