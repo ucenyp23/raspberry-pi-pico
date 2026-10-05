@@ -1,7 +1,7 @@
 from machine import Pin, UART
 from utime import sleep_ms
 
-uart = UART(1, baudrate=9600, tx=Pin(6), rx=Pin(7))
+uart = UART(1, baudrate=9600, tx=Pin(4), rx=Pin(5))
 button = Pin(0, Pin.IN, Pin.PULL_UP)
 
 def main():

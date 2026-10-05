@@ -3,8 +3,8 @@ import socket
 from machine import Pin
 from utime import sleep_ms
 
-SSID = "your_wifi_name"
-PASSWORD = "your_wifi_password"
+SSID = "access_point"
+PASSWORD = "12345678"
 RECEIVER_IP = "192.168.1.100"
 RECEIVER_PORT = 5000
 
