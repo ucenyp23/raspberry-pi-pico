@@ -1,0 +1,1 @@
+If button is pressed it switches the LED value to the the opossite state it is in and sends it over Wi-Fi to the secondary Pico. It start off.
