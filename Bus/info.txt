@@ -1,1 +1,1 @@
-Print "Hello World" on the first line, and "Count: " and the second since start on the second line.
+Print "Hello World" on the first line, and "Count: " and the second since start on the second line of the display. While the last number of the count is displayed on the LED matrix.
