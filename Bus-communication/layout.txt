@@ -1,3 +1,4 @@
 GP0 -> Button -> GND
 UART1 TX -> UART1 RX (Secondary Pico)
 UART1 RX -> UART1 TX (Secondary Pico)
+GND -> GND (Secondary Pico)
