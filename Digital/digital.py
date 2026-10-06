@@ -6,18 +6,15 @@ led = Pin(0, Pin.OUT)
 
 def main():
     State = False
-    
     while True:
         if button.value() == False:
             sleep_ms(100)
-            
             if State == False:
                 led.value(True)
                 State = True
             else:
                 led.value(False)
                 State = False
-            
             while button.value() == False:
                 sleep_ms(20)
 

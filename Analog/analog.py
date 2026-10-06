@@ -8,9 +8,7 @@ led.freq(1000)
 def main():
     while True:
         adc_value = adc.read_u16()
-        
         led.duty_u16(adc_value)
-        
         sleep_ms(100)
 
 if __name__ == '__main__':

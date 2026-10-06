@@ -1,1 +1,1 @@
-If button is pressed it switches the LED to the the opossite state it is in. It start off.
+Stisknutím tlačítka se stav červené LED přepne na opačný, než je aktuální. Výchozí stav je vypnutá.

@@ -7,8 +7,16 @@ i2c = I2C(
     scl=Pin(1),
     freq=400000
 )
-
 LCD_ADDR = 0x27
+spi = SPI(
+    0,
+    baudrate=1_000_000,
+    polarity=0,
+    phase=0,
+    sck=Pin(2),
+    mosi=Pin(3)
+)
+max_cs = Pin(5, Pin.OUT, value=1)
 
 class LCD:
     def __init__(self, addr):
@@ -38,26 +46,20 @@ class LCD:
 
     def _init_display(self):
         sleep_ms(50)
-
         self._write_nibble(0x30)
         sleep_ms(10)
         self._write_nibble(0x30)
         sleep_ms(10)
         self._write_nibble(0x30)
         sleep_ms(10)
-
         self._write_nibble(0x20)
         sleep_ms(10)
-
         self._write_byte(0x28)
         sleep_ms(5)
-
         self._write_byte(0x0C)
         sleep_ms(5)
-
         self._write_byte(0x01)
         sleep_ms(10)
-
         self._write_byte(0x06)
         sleep_ms(5)
 
@@ -70,35 +72,20 @@ class LCD:
             self._write_byte(0x80)
         else:
             self._write_byte(0xC0)
-
         sleep_ms(2)
-
         for char in text[:16]:
             self._write_byte(ord(char), rs=1)
             sleep_ms(1)
-
-spi = SPI(
-    0,
-    baudrate=1_000_000,
-    polarity=0,
-    phase=0,
-    sck=Pin(2),
-    mosi=Pin(3)
-)
-
-max_cs = Pin(5, Pin.OUT, value=1)
 
 class MAX7219:
     def __init__(self, spi, cs, intensity=3):
         self.spi = spi
         self.cs = cs
-
         self._write_register(0x09, 0x00)
         self._write_register(0x0A, intensity)
         self._write_register(0x0B, 0x07)
         self._write_register(0x0C, 0x01)
         self._write_register(0x0F, 0x00)
-
         self.clear()
 
     def _write_register(self, register, value):
@@ -122,7 +109,6 @@ class MAX7219:
                 0b00111100,
                 0b00000000,
             ),
-
             1: (
                 0b00011000,
                 0b00111000,
@@ -133,7 +119,6 @@ class MAX7219:
                 0b01111110,
                 0b00000000,
             ),
-
             2: (
                 0b00111100,
                 0b01100110,
@@ -144,7 +129,6 @@ class MAX7219:
                 0b01111110,
                 0b00000000,
             ),
-
             3: (
                 0b00111100,
                 0b01100110,
@@ -155,7 +139,6 @@ class MAX7219:
                 0b00111100,
                 0b00000000,
             ),
-
             4: (
                 0b00001100,
                 0b00011100,
@@ -166,7 +149,6 @@ class MAX7219:
                 0b00001100,
                 0b00000000,
             ),
-
             5: (
                 0b01111110,
                 0b01100000,
@@ -177,7 +159,6 @@ class MAX7219:
                 0b00111100,
                 0b00000000,
             ),
-
             6: (
                 0b00111100,
                 0b01100110,
@@ -188,7 +169,6 @@ class MAX7219:
                 0b00111100,
                 0b00000000,
             ),
-
             7: (
                 0b01111110,
                 0b00000110,
@@ -199,7 +179,6 @@ class MAX7219:
                 0b00110000,
                 0b00000000,
             ),
-
             8: (
                 0b00111100,
                 0b01100110,
@@ -210,7 +189,6 @@ class MAX7219:
                 0b00111100,
                 0b00000000,
             ),
-
             9: (
                 0b00111100,
                 0b01100110,
@@ -222,25 +200,19 @@ class MAX7219:
                 0b00000000,
             ),
         }
-
         pattern = digits.get(digit, digits[0])
-
         for row, data in enumerate(pattern, start=1):
             self._write_register(row, data)
 
 def main():
     lcd = LCD(LCD_ADDR)
     matrix = MAX7219(spi, max_cs, intensity=3)
-
     counter = 0
-
     while True:
         lcd.clear()
         lcd.write("Hello World", 0)
         lcd.write("Count: {}".format(counter), 1)
-
         matrix.show_digit(counter % 10)
-
         counter += 1
         sleep_ms(1000)
 
