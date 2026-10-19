@@ -1,0 +1,1 @@
+Odešle stav tlačítka přes Wi-Fi protokol do druhého Pico, který jej používá jako hodnotu pro červenou LED.

@@ -3,9 +3,9 @@ import socket
 from machine import Pin
 from utime import sleep_ms
 
-SSID = "access_point"
-PASSWORD = "12345678"
-RECEIVER_IP = "192.168.4.1"
+SSID = "Redmi"
+PASSWORD = "redmitether"
+RECEIVER_IP = "10.20.141.152"
 RECEIVER_PORT = 5000
 button = Pin(0, Pin.IN, Pin.PULL_UP)
 timeout = 100
@@ -13,7 +13,14 @@ wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 wlan.connect(SSID, PASSWORD)
 
+msgs = [
+    "To who It may consern, please when most convinient turn your Light Emitting Diode to the off state.",
+    "To who It may consern, please set your Light Emitting Diode to the on state.",
+]
+
 def main():
+    global timeout
+
     while not wlan.isconnected() and timeout > 0:
         sleep_ms(100)
         timeout -= 1
@@ -28,7 +35,7 @@ def main():
     while True:
         current_state = button.value()
         if current_state != previous_state:
-            message = str(current_state).encode()
+            message = str(msgs[current_state]).encode()
             sock.sendto(message, (RECEIVER_IP, RECEIVER_PORT))
             print("Sent:", message)
             previous_state = current_state

@@ -1,0 +1,1 @@
+Na prvním řádku obrazovky se zobrazuje „Hello World“ a na druhém řádku „Count: “, spolu s časem v sekundách od zapnutí zařízení. LED matice mezitím zobrazuje poslední číslici (0–9).

@@ -1,0 +1,1 @@
+Stisknutím tlačítka se stav červené LED přepne na opačný, než je aktuální. Výchozí stav je vypnutá.

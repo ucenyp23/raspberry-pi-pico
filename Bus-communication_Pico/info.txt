@@ -1,0 +1,1 @@
+Odešle stav tlačítka přes rozhraní UART do druhého Pico, který jej používá jako hodnotu pro červenou LED.
