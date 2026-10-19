@@ -1,0 +1,1 @@
+Bliká s periodou dvou sekund integrovanou LED diodou zařízení Raspberry Pi Pico.

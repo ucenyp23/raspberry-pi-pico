@@ -1,1 +1,0 @@
-Blikne vestavěnou LED diodu Raspberry Pi Pico po dobu jedné sekundy každou druhou sekundu.

@@ -1,3 +1,1 @@
-GP0 -> 180 Ω rezistor -> červená dioda -> GND
-
-3V3(OUT)/GND -> potenciometr -> ADC0
+PWM0 (12) -> 180 Ω rezistor -> červená dioda -> GND (9)

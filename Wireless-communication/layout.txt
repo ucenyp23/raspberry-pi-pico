@@ -1,1 +1,1 @@
-GP0 -> tlačítko -> GND
+GP0 (1) -> tlačítko -> GND (3)

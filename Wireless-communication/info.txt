@@ -1,1 +1,1 @@
-Odešle stav tlačítka přes Wi-Fi protokol do druhého Pico, který jej používá jako hodnotu pro červenou LED.
+Odešle hodnotu stavu tlačítka přes Wi-Fi protokol do jednotky Pi 4, která ji využívá k řízení červené LED diody.

@@ -1,1 +1,1 @@
-Stisknutím tlačítka se stav červené LED přepne na opačný, než je aktuální. Výchozí stav je vypnutá.
+Stisknutí tlačítka způsobí aktivaci červené LED diody, přičemž její uvolnění vede k její následné deaktivaci.
