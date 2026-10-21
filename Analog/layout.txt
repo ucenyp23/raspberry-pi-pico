@@ -1,1 +1,5 @@
 PWM0 (12) -> 180 Ω rezistor -> červená dioda -> GND (9)
+
+GPIO27 (13) -> tlačítko -> GND (9)
+
+GPIO22 (15) -> tlačítko -> GND (9)

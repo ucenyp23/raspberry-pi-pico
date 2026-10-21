@@ -2,7 +2,7 @@ from gpiozero import PWMLED, Button
 from flask import Flask, jsonify, render_template_string, request
 from threading import Lock
 
-led = PWMLED(18)
+led = PWMLED(17)
 button_up = Button(27)
 button_down = Button(22)
 
