@@ -1,5 +1,5 @@
-GP0 (1) -> tlačítko -> GND (3)
+GPIO17 (11) -> 180 Ω rezistor -> červená dioda -> GND (9)
 
-UART1 TX (11) -> RXD0 (Pi 4)
-UART1 RX (12) -> TXD0 (Pi 4)
-GND (3) -> GND (Pi 4)
+UART1 TX (Pico) -> RXD0 (10)
+UART1 RX (Pico) -> TXD0 (8)
+GND (Pico) -> GND (9)

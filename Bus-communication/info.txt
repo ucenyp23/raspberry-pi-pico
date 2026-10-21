@@ -1,1 +1,1 @@
-Odešle hodnotu stavu tlačítka rozhraním UART do jednotky Pi 4, která ji využívá k řízení červené LED diody.
+Přijme hodnotu stavu tlačítka rozhraním UART od jednotky Pico a využíje ji k řízení červené LED diody.
