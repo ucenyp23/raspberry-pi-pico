@@ -1,1 +1,1 @@
-GP0 (1) -> tlačítko -> GND (3)
+GPIO17 (11) -> 180 Ω rezistor -> červená dioda -> GND (9)⏎
