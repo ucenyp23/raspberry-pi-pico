@@ -1,0 +1,1 @@
+Přijme hodnotu stavu tlačítka přes Wi-Fi protokol od jednotky Pico a využije ji k řízení červené LED diody.
