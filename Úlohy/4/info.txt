@@ -1,1 +1,2 @@
-Odešle hodnotu stavu tlačítka rozhraním UART do další jednotky Pico, která ji využívá k řízení červené LED diody.
+Out: Při změně stavu tlačítka odešle jeho hodnotu ('0' nebo '1') přes UART do druhé jednotky Pico.
+In: Přijímá hodnotu přes UART a rozsvítí červenou LED při stisknutém tlačítku ('0'); při uvolněném tlačítku ('1') ji zhasne.

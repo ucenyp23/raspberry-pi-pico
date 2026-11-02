@@ -1,1 +1,1 @@
-Cyklicky reguluje úroveň jasu červené LED diody.
+Jas červené LED diody lze měnit tlačítky nebo přes webovou stránku v rozsahu 0–100 %.

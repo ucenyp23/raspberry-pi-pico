@@ -1,1 +1,1 @@
-Stisknutí tlačítka způsobí aktivaci červené LED diody, přičemž její uvolnění vede k její následné deaktivaci.
+Stisknutí tlačítka rozsvítí červenou LED a jeho uvolnění ji zhasne. LED lze ovládat také přes webovou stránku.

@@ -1,1 +1,1 @@
-Načte hodnotu z pinu ADC0 a nastaví ji jako jas červené LED diody.
+Čte hodnotu z pinu ADC0 a nastavuje ji jako jas červené LED diody.
