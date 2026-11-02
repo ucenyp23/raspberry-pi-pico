@@ -2,4 +2,4 @@ Out:
 GP0 (1) -> tlačítko -> GND (3)
 
 In:
-GP0 (1) -> 180 Ω rezistor -> červená dioda -> GND (3)
+GP1 (2) -> červená dioda -> GND (3)
