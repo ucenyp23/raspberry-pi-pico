@@ -1,1 +1,2 @@
-Přijme hodnotu stavu tlačítka přes Wi-Fi protokol od jednotky Pico a využije ji k řízení červené LED diody.
+Out: Při změně stavu tlačítka odešle přes Wi‑Fi pomocí UDP textový příkaz do druhé jednotky Pico. Stisknuté tlačítko vyšle příkaz k vypnutí LED; uvolněné tlačítko příkaz k jejímu zapnutí.
+In: Přijímá UDP příkazy od druhé jednotky Pico a podle jejich obsahu červenou LED zapne nebo vypne.
