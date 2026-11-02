@@ -9,58 +9,56 @@ app = Flask(__name__)
 # LED na GPIO 17
 red_led = LED(17)
 
-# Práh – když ADC > práh, LED se zapne
-ADC_THRESHOLD = 2048  # Upravit podle potřeby
-
 # Globální stav
 state_data = {
-    'adc_value': 0,
+    'button_state': None,  # '0' = pressed (LED ON), '1' = released (LED OFF)
     'led_state': False,
-    'last_update': None
+    'last_update': None,
+    'source': 'uart'  # 'uart' nebo 'web'
 }
 
 # Zámek pro thread-safe přístup
 state_lock = threading.Lock()
 
 def uart_reader():
-    """Čti UART v pozadí"""
-    ser = serial.Serial('/dev/ttyAMA0', baudrate=115200, timeout=1)
-    print("UART čtecí vlákno spuštěno...")
-    
+    """Čti UART v pozadí od Pica"""
     try:
+        ser = serial.Serial('/dev/ttyAMA0', baudrate=9600, timeout=1)
+        print("UART čtecí vlákno spuštěno...")
+        
         while True:
             if ser.in_waiting:
                 line = ser.readline().decode().strip()
                 
-                if line:
-                    try:
-                        adc_value = int(line)
-                        
-                        with state_lock:
-                            state_data['adc_value'] = adc_value
-                            state_data['last_update'] = time.time()
-                        
-                        print(f"UART ADC: {adc_value}")
-                        
-                        # Ovládej LED podle prahu
-                        if adc_value > ADC_THRESHOLD:
-                            red_led.on()
-                            with state_lock:
-                                state_data['led_state'] = True
-                        else:
-                            red_led.off()
-                            with state_lock:
-                                state_data['led_state'] = False
+                if line in ['0', '1']:
+                    with state_lock:
+                        state_data['button_state'] = line
+                        state_data['last_update'] = time.time()
+                        state_data['source'] = 'uart'
                     
-                    except ValueError:
-                        print(f"Chyba: nelze parsovat '{line}'")
+                    print(f"UART přijato: {line} - tlačítko {'STISKNUTO' if line == '0' else 'UVOLNĚNO'}")
+                    
+                    # Ovládej LED podle hodnoty
+                    # '0' = stisknuto = LED ON
+                    # '1' = uvolněno = LED OFF
+                    if line == '0':
+                        red_led.on()
+                        with state_lock:
+                            state_data['led_state'] = True
+                    else:
+                        red_led.off()
+                        with state_lock:
+                            state_data['led_state'] = False
             
             time.sleep(0.05)
     
     except Exception as e:
         print(f"Chyba UART: {e}")
     finally:
-        ser.close()
+        try:
+            ser.close()
+        except:
+            pass
 
 # Spusť čtecí vlákno
 uart_thread = threading.Thread(target=uart_reader, daemon=True)
@@ -73,72 +71,125 @@ def index():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>UART ADC LED Ovladač</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Pico Button → LED Control</title>
         <style>
             body { 
-                font-family: Arial; 
+                font-family: Arial, sans-serif; 
                 text-align: center; 
-                margin-top: 50px;
-                background: #f0f0f0;
+                margin: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
             .container {
                 background: white;
                 padding: 40px;
-                border-radius: 10px;
+                border-radius: 15px;
                 max-width: 500px;
-                margin: 0 auto;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            }
+            h1 {
+                color: #333;
+                margin-bottom: 30px;
+            }
+            .section {
+                margin: 30px 0;
+                padding: 20px;
+                border: 2px solid #e0e0e0;
+                border-radius: 10px;
+            }
+            .section-title {
+                font-weight: bold;
+                color: #666;
+                font-size: 14px;
+                text-transform: uppercase;
+                margin-bottom: 15px;
             }
             .led { 
                 width: 120px; 
                 height: 120px; 
                 border-radius: 50%; 
-                margin: 30px auto; 
-                transition: 0.3s;
-                border: 3px solid #333;
+                margin: 20px auto; 
+                transition: all 0.3s;
+                border: 4px solid #333;
             }
             .led.on { 
-                background: #ff0000; 
-                box-shadow: 0 0 30px red, inset 0 0 20px rgba(255,0,0,0.5);
+                background: #ff4444; 
+                box-shadow: 0 0 40px rgba(255, 68, 68, 0.8), 
+                           inset 0 0 20px rgba(255,0,0,0.5);
             }
             .led.off { 
-                background: #333; 
-                box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+                background: #cccccc; 
+                box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
             }
-            .adc-value {
-                font-size: 28px;
-                font-weight: bold;
-                margin: 20px 0;
+            .button-state {
+                font-size: 16px;
                 color: #333;
-            }
-            .bar {
-                width: 100%;
-                height: 30px;
-                background: #ddd;
+                margin: 15px 0;
+                padding: 10px;
+                background: #f5f5f5;
                 border-radius: 5px;
-                margin: 20px 0;
-                overflow: hidden;
-                border: 2px solid #999;
             }
-            .bar-fill {
-                height: 100%;
-                background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
-                transition: width 0.2s;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
+            .button-state.pressed {
+                background: #ffe0e0;
+                color: #d32f2f;
                 font-weight: bold;
             }
-            .threshold {
-                font-size: 14px;
-                color: #666;
-                margin-top: 10px;
+            .button-state.released {
+                background: #e0f5e0;
+                color: #388e3c;
+                font-weight: bold;
             }
-            .status {
-                font-size: 18px;
-                margin: 20px 0;
-                color: #333;
+            .web-control {
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+            }
+            button {
+                padding: 12px 25px;
+                font-size: 16px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: all 0.3s;
+                font-weight: bold;
+            }
+            .btn-on {
+                background-color: #4CAF50;
+                color: white;
+            }
+            .btn-on:hover {
+                background-color: #45a049;
+                transform: scale(1.05);
+            }
+            .btn-off {
+                background-color: #f44336;
+                color: white;
+            }
+            .btn-off:hover {
+                background-color: #da190b;
+                transform: scale(1.05);
+            }
+            .status-info {
+                font-size: 12px;
+                color: #999;
+                margin-top: 15px;
+                padding-top: 15px;
+                border-top: 1px solid #e0e0e0;
+            }
+            .source-badge {
+                display: inline-block;
+                background: #e3f2fd;
+                color: #1976d2;
+                padding: 3px 8px;
+                border-radius: 3px;
+                font-size: 11px;
+                font-weight: bold;
+                margin-left: 10px;
             }
         </style>
         <script>
@@ -147,16 +198,7 @@ def index():
                     const response = await fetch('/status');
                     const data = await response.json();
                     
-                    // Zobraz ADC hodnotu
-                    document.getElementById('adc-value').textContent = data.adc_value;
-                    
-                    // Naplň bar graf (0-4095)
-                    const percentage = (data.adc_value / 4095) * 100;
-                    const barFill = document.getElementById('bar-fill');
-                    barFill.style.width = percentage + '%';
-                    barFill.textContent = percentage.toFixed(0) + '%';
-                    
-                    // Ovládej LED barvu
+                    // Update LED
                     const led = document.getElementById('led');
                     if (data.led_state) {
                         led.classList.add('on');
@@ -166,12 +208,40 @@ def index():
                         led.classList.remove('on');
                     }
                     
-                    // Poslední aktualizace
+                    // Update button state
+                    const buttonState = document.getElementById('button-state');
+                    if (data.button_state === '0') {
+                        buttonState.textContent = '🔘 TLAČÍTKO: STISKNUTO';
+                        buttonState.classList.remove('released');
+                        buttonState.classList.add('pressed');
+                    } else if (data.button_state === '1') {
+                        buttonState.textContent = '⭕ TLAČÍTKO: UVOLNĚNO';
+                        buttonState.classList.remove('pressed');
+                        buttonState.classList.add('released');
+                    } else {
+                        buttonState.textContent = '❓ TLAČÍTKO: ČEKÁNÍ NA DATA';
+                        buttonState.classList.remove('pressed', 'released');
+                    }
+                    
+                    // Update timestamp
                     if (data.last_update) {
                         const lastUpdate = new Date(data.last_update * 1000);
                         document.getElementById('timestamp').textContent = 
-                            lastUpdate.toLocaleTimeString();
+                            lastUpdate.toLocaleTimeString('cs-CZ');
                     }
+                    
+                    // Update source
+                    document.getElementById('source').textContent = 
+                        data.source === 'uart' ? 'UART (Pico)' : 'Web Interface';
+                } catch (e) {
+                    console.error('Chyba:', e);
+                }
+            }
+            
+            async function sendCommand(state) {
+                try {
+                    await fetch(`/led?state=${state}`);
+                    updateStatus();
                 } catch (e) {
                     console.error('Chyba:', e);
                 }
@@ -183,22 +253,36 @@ def index():
     </head>
     <body>
         <div class="container">
-            <h1>🔴 ADC → LED Ovladač</h1>
+            <h1>🔴 Button → LED Control</h1>
             
-            <div id="led" class="led off"></div>
-            
-            <div class="status">
-                ADC Hodnota: <span class="adc-value" id="adc-value">—</span>
+            <!-- LED Display -->
+            <div class="section">
+                <div class="section-title">LED Status</div>
+                <div id="led" class="led off"></div>
+                <div id="button-state" class="button-state">❓ TLAČÍTKO: ČEKÁNÍ NA DATA</div>
             </div>
             
-            <div class="bar">
-                <div class="bar-fill" id="bar-fill">0%</div>
+            <!-- UART Input -->
+            <div class="section">
+                <div class="section-title">Pico Button Input (UART)</div>
+                <p style="font-size: 14px; color: #666; margin: 0;">
+                    Pico tlačítko je připojeno a odesílá stav přes UART...
+                </p>
             </div>
             
-            <div class="threshold">Práh: 2048 (LED se zapne když ADC &gt; 2048)</div>
+            <!-- Web Control -->
+            <div class="section">
+                <div class="section-title">Manual Web Control</div>
+                <div class="web-control">
+                    <button class="btn-on" onclick="sendCommand(1)">🟢 ON</button>
+                    <button class="btn-off" onclick="sendCommand(0)">🔴 OFF</button>
+                </div>
+            </div>
             
-            <div style="font-size: 12px; color: #999; margin-top: 20px;">
-                Poslední aktualizace: <span id="timestamp">—</span>
+            <!-- Status Info -->
+            <div class="status-info">
+                <div>Poslední aktualizace: <span id="timestamp">—</span></div>
+                <div>Zdroj signálu: <span id="source">—</span></div>
             </div>
         </div>
     </body>
@@ -209,10 +293,38 @@ def index():
 def status():
     with state_lock:
         return jsonify({
-            'adc_value': state_data['adc_value'],
+            'button_state': state_data['button_state'],
             'led_state': state_data['led_state'],
-            'last_update': state_data['last_update']
+            'last_update': state_data['last_update'],
+            'source': state_data['source']
         })
+
+@app.route('/led')
+def control_led():
+    """Web control endpoint"""
+    try:
+        state = request.args.get('state', '0')
+        
+        with state_lock:
+            state_data['source'] = 'web'
+            state_data['last_update'] = time.time()
+        
+        if state == '1':
+            red_led.on()
+            with state_lock:
+                state_data['led_state'] = True
+            print("Web: LED ON")
+        else:
+            red_led.off()
+            with state_lock:
+                state_data['led_state'] = False
+            print("Web: LED OFF")
+        
+        return jsonify({'success': True, 'state': state})
+    
+    except Exception as e:
+        print(f"Chyba ovládání: {e}")
+        return jsonify({'success': False, 'error': str(e)})
 
 if __name__ == '__main__':
     try:
