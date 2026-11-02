@@ -1,13 +1,13 @@
 Out:
 GP0 (1) -> tlačítko -> GND (3)
 
-UART1 TX (11) -> UART1 RX (Pico In, 12)
-UART1 TX (Pico In, 11) -> UART1 RX (12)
+UART1 TX (6) -> UART1 RX (Pico In, 7)
+UART1 TX (Pico In, 6) -> UART1 RX (7)
 GND (3) -> GND (Pico In, 3)
 
 In:
-GP0 (1) -> 180 Ω rezistor -> červená dioda -> GND (3)
+GP1 (2) -> červená dioda -> GND (3)
 
-UART1 TX (11) -> UART1 RX (Pico Out, 12)
-UART1 TX (Pico Out, 11) -> UART1 RX (12)
+UART1 TX (6) -> UART1 RX (Pico Out, 7)
+UART1 TX (Pico Out, 6) -> UART1 RX (7)
 GND (3) -> GND (Pico Out, 3)
