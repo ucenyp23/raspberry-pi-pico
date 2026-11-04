@@ -1,69 +1,71 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, jsonify, request
 import serial
 import threading
 import time
-from gpiozero import LED
 
 app = Flask(__name__)
 
-# LED na GPIO 17
-red_led = LED(17)
+# UART connections
+uart_in = None  # From Out Pico (UART0 RXD)
+uart_out = None  # To In Pico (UART1 TXD)
 
-# Globální stav
+try:
+    uart_in = serial.Serial('/dev/ttyAMA0', baudrate=9600, timeout=1)
+    print("✓ UART IN (from Out Pico) connected on /dev/ttyAMA0")
+except Exception as e:
+    print(f"✗ Error opening UART IN: {e}")
+
+try:
+    uart_out = serial.Serial('/dev/ttyAMA1', baudrate=9600, timeout=1)
+    print("✓ UART OUT (to In Pico) connected on /dev/ttyAMA1")
+except Exception as e:
+    print(f"✗ Error opening UART OUT: {e}")
+
+# State tracking
 state_data = {
-    'button_state': None,  # '0' = pressed (LED ON), '1' = released (LED OFF)
+    'button_state': None,
     'led_state': False,
     'last_update': None,
-    'source': 'uart'  # 'uart' nebo 'web'
+    'source': 'uart'
 }
 
-# Zámek pro thread-safe přístup
 state_lock = threading.Lock()
 
+def send_to_in_pico(value):
+    """Send button state to In Pico"""
+    if uart_out:
+        try:
+            uart_out.write((str(value) + '\n').encode())
+            print(f"UART OUT to In Pico: {value}")
+        except Exception as e:
+            print(f"Error writing to In Pico: {e}")
+
 def uart_reader():
-    """Čti UART v pozadí od Pica"""
-    try:
-        ser = serial.Serial('/dev/ttyAMA0', baudrate=9600, timeout=1)
-        print("UART čtecí vlákno spuštěno...")
-        
-        while True:
-            if ser.in_waiting:
-                line = ser.readline().decode().strip()
-                
+    """Read from Out Pico and relay to In Pico"""
+    print("UART reader thread started...")
+    while True:
+        try:
+            if uart_in and uart_in.in_waiting:
+                line = uart_in.readline().decode().strip()
                 if line in ['0', '1']:
                     with state_lock:
                         state_data['button_state'] = line
+                        state_data['led_state'] = (line == '0')
                         state_data['last_update'] = time.time()
                         state_data['source'] = 'uart'
                     
-                    print(f"UART přijato: {line} - tlačítko {'STISKNUTO' if line == '0' else 'UVOLNĚNO'}")
+                    print(f"UART RX from Out Pico: {line}")
                     
-                    # Ovládej LED podle hodnoty
-                    # '0' = stisknuto = LED ON
-                    # '1' = uvolněno = LED OFF
-                    if line == '0':
-                        red_led.on()
-                        with state_lock:
-                            state_data['led_state'] = True
-                    else:
-                        red_led.off()
-                        with state_lock:
-                            state_data['led_state'] = False
+                    # RELAY to In Pico
+                    send_to_in_pico(line)
             
             time.sleep(0.05)
-    
-    except Exception as e:
-        print(f"Chyba UART: {e}")
-    finally:
-        try:
-            ser.close()
-        except:
-            pass
+        except Exception as e:
+            print(f"UART reader error: {e}")
+            time.sleep(1)
 
-# Spusť čtecí vlákno
 uart_thread = threading.Thread(target=uart_reader, daemon=True)
 uart_thread.start()
-time.sleep(1)  # Čekej na spuštění
 
 @app.route('/')
 def index():
@@ -144,36 +146,6 @@ def index():
                 color: #388e3c;
                 font-weight: bold;
             }
-            .web-control {
-                display: flex;
-                gap: 10px;
-                justify-content: center;
-            }
-            button {
-                padding: 12px 25px;
-                font-size: 16px;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                transition: all 0.3s;
-                font-weight: bold;
-            }
-            .btn-on {
-                background-color: #4CAF50;
-                color: white;
-            }
-            .btn-on:hover {
-                background-color: #45a049;
-                transform: scale(1.05);
-            }
-            .btn-off {
-                background-color: #f44336;
-                color: white;
-            }
-            .btn-off:hover {
-                background-color: #da190b;
-                transform: scale(1.05);
-            }
             .status-info {
                 font-size: 12px;
                 color: #999;
@@ -181,15 +153,22 @@ def index():
                 padding-top: 15px;
                 border-top: 1px solid #e0e0e0;
             }
-            .source-badge {
-                display: inline-block;
-                background: #e3f2fd;
-                color: #1976d2;
-                padding: 3px 8px;
-                border-radius: 3px;
-                font-size: 11px;
-                font-weight: bold;
-                margin-left: 10px;
+            .web-control {
+                margin-top: 20px;
+            }
+            .web-control button {
+                background: #667eea;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+                margin: 5px;
+                transition: background 0.3s;
+            }
+            .web-control button:hover {
+                background: #764ba2;
             }
         </style>
         <script>
@@ -198,7 +177,6 @@ def index():
                     const response = await fetch('/status');
                     const data = await response.json();
                     
-                    // Update LED
                     const led = document.getElementById('led');
                     if (data.led_state) {
                         led.classList.add('on');
@@ -208,42 +186,35 @@ def index():
                         led.classList.remove('on');
                     }
                     
-                    // Update button state
                     const buttonState = document.getElementById('button-state');
                     if (data.button_state === '0') {
-                        buttonState.textContent = '🔘 TLAČÍTKO: STISKNUTO';
+                        buttonState.textContent = '🔘 BUTTON: PRESSED';
                         buttonState.classList.remove('released');
                         buttonState.classList.add('pressed');
                     } else if (data.button_state === '1') {
-                        buttonState.textContent = '⭕ TLAČÍTKO: UVOLNĚNO';
+                        buttonState.textContent = '⭕ BUTTON: RELEASED';
                         buttonState.classList.remove('pressed');
                         buttonState.classList.add('released');
                     } else {
-                        buttonState.textContent = '❓ TLAČÍTKO: ČEKÁNÍ NA DATA';
+                        buttonState.textContent = '❓ BUTTON: WAITING...';
                         buttonState.classList.remove('pressed', 'released');
                     }
                     
-                    // Update timestamp
                     if (data.last_update) {
                         const lastUpdate = new Date(data.last_update * 1000);
                         document.getElementById('timestamp').textContent = 
-                            lastUpdate.toLocaleTimeString('cs-CZ');
+                            lastUpdate.toLocaleTimeString();
                     }
-                    
-                    // Update source
-                    document.getElementById('source').textContent = 
-                        data.source === 'uart' ? 'UART (Pico)' : 'Web Interface';
                 } catch (e) {
-                    console.error('Chyba:', e);
+                    console.error('Error:', e);
                 }
             }
             
-            async function sendCommand(state) {
+            async function controlLED(state) {
                 try {
-                    await fetch(`/led?state=${state}`);
-                    updateStatus();
+                    await fetch(`/control?led=${state}`);
                 } catch (e) {
-                    console.error('Chyba:', e);
+                    console.error('Error:', e);
                 }
             }
             
@@ -255,34 +226,25 @@ def index():
         <div class="container">
             <h1>🔴 Button → LED Control</h1>
             
-            <!-- LED Display -->
             <div class="section">
                 <div class="section-title">LED Status</div>
                 <div id="led" class="led off"></div>
-                <div id="button-state" class="button-state">❓ TLAČÍTKO: ČEKÁNÍ NA DATA</div>
+                <div id="button-state" class="button-state">❓ BUTTON: WAITING...</div>
             </div>
             
-            <!-- UART Input -->
             <div class="section">
-                <div class="section-title">Pico Button Input (UART)</div>
-                <p style="font-size: 14px; color: #666; margin: 0;">
-                    Pico tlačítko je připojeno a odesílá stav přes UART...
-                </p>
-            </div>
-            
-            <!-- Web Control -->
-            <div class="section">
-                <div class="section-title">Manual Web Control</div>
+                <div class="section-title">Web Control</div>
                 <div class="web-control">
-                    <button class="btn-on" onclick="sendCommand(1)">🟢 ON</button>
-                    <button class="btn-off" onclick="sendCommand(0)">🔴 OFF</button>
+                    <button onclick="controlLED(0)">🔴 LED ON</button>
+                    <button onclick="controlLED(1)">⚫ LED OFF</button>
                 </div>
             </div>
             
-            <!-- Status Info -->
-            <div class="status-info">
-                <div>Poslední aktualizace: <span id="timestamp">—</span></div>
-                <div>Zdroj signálu: <span id="source">—</span></div>
+            <div class="section">
+                <div class="section-title">System Status</div>
+                <div class="status-info">
+                    <div>Last Update: <span id="timestamp">—</span></div>
+                </div>
             </div>
         </div>
     </body>
@@ -299,36 +261,21 @@ def status():
             'source': state_data['source']
         })
 
-@app.route('/led')
-def control_led():
-    """Web control endpoint"""
-    try:
-        state = request.args.get('state', '0')
-        
+@app.route('/control')
+def control():
+    """Allow web-based LED control"""
+    led_value = request.args.get('led', type=int)
+    if led_value in [0, 1]:
         with state_lock:
-            state_data['source'] = 'web'
+            state_data['led_state'] = (led_value == 0)
             state_data['last_update'] = time.time()
+            state_data['source'] = 'web'
         
-        if state == '1':
-            red_led.on()
-            with state_lock:
-                state_data['led_state'] = True
-            print("Web: LED ON")
-        else:
-            red_led.off()
-            with state_lock:
-                state_data['led_state'] = False
-            print("Web: LED OFF")
-        
-        return jsonify({'success': True, 'state': state})
-    
-    except Exception as e:
-        print(f"Chyba ovládání: {e}")
-        return jsonify({'success': False, 'error': str(e)})
+        # Send to In Pico
+        send_to_in_pico(led_value)
+        print(f"WEB: LED control set to {led_value}")
+        return jsonify({'status': 'ok', 'value': led_value})
+    return jsonify({'status': 'error', 'message': 'Invalid value'}), 400
 
 if __name__ == '__main__':
-    try:
-        app.run(host='0.0.0.0', port=5000, debug=False)
-    except KeyboardInterrupt:
-        print("\nUkončení...")
-        red_led.off()
+    app.run(host='0.0.0.0', port=5000, debug=False)

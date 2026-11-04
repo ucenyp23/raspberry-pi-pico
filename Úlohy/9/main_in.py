@@ -1,8 +1,8 @@
 from machine import Pin, UART
 from utime import sleep_ms
 
-uart = UART(0, baudrate=9600, tx=Pin(0), rx=Pin(1))
-led = Pin(4, Pin.OUT)
+uart = UART(1, baudrate=9600, tx=Pin(4), rx=Pin(5))
+led = Pin(0, Pin.OUT)
 led.off()
 
 def main():
