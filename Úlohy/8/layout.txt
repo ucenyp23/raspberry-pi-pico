@@ -1,10 +1,10 @@
-SDA1 (3) -> SDA
-SCL1 (5) -> SCL
+SDA (3) -> SDA
+SCL (5) -> SCL
 3V3 (1) -> VCC
 GND -> GND (6)
 
-SPI0 SCLK (23) -> CLK
-SPI0 MOSI (19) -> DIN
-SPI0 CE0 (24) -> CS
+SCLK (23) -> CLK
+MOSI (19) -> DIN
+CE0 (24) -> CS
 3V3 (1) -> VCC
 GND -> GND (6)

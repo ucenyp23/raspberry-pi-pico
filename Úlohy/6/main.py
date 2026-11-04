@@ -1,8 +1,8 @@
 from gpiozero import LED, Button
 from flask import Flask, jsonify, render_template_string
 
-button = Button(27)
-led = LED(17)
+button = Button(17)
+led = LED(4)
 
 app = Flask(__name__)
 

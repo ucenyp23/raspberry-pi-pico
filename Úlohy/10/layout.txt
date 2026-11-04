@@ -1,5 +1,8 @@
 Out:
 GP0 (1) -> tlačítko -> GND (3)
 
+Between:
+Žádné zapojení.
+
 In:
 GPIO4 (7) -> 180 Ω rezistor -> červená dioda -> GND (6)
