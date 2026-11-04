@@ -5,4 +5,4 @@ Between:
 Žádné zapojení.
 
 In:
-GPIO4 (7) -> 180 Ω rezistor -> červená dioda -> GND (6)
+GP0 (1) -> 180 Ω rezistor -> červená dioda -> GND (3)

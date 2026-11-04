@@ -10,7 +10,7 @@ UART1 TX (Pico Out, 6) -> RXD0 (10)
 GND (6) -> GND (Pico Out & In, 3)
 
 In:
-GPIO4 (7) -> 180 Ω rezistor -> červená dioda -> GND (6)
+GP0 (1) -> 180 Ω rezistor -> červená dioda -> GND (3)
 
 TXD0 (Pi 4, 8) -> UART1 RX (7)
 GND (3) -> GND (Pi 4, 6)
