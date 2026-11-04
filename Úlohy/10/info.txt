@@ -1,2 +1,3 @@
-Out: Při změně stavu tlačítka odešle přes Wi‑Fi pomocí UDP textový příkaz do druhé jednotky Pico. Stisknuté tlačítko vyšle příkaz k vypnutí LED; uvolněné tlačítko příkaz k jejímu zapnutí.
-In: Přijímá UDP příkazy od druhé jednotky Pico a podle jejich obsahu červenou LED zapne nebo vypne.
+Out: Při změně stavu tlačítka odešle jeho hodnotu ('0' nebo '1') přes Wi‑Fi do Pi 4.
+Between: Přijímá hodnotu přes Wi‑Fi a přeposílá ji do druhé jednotky Pico. LED lze ovládat také prostřednictvím webové stránky.
+In: Přijímá hodnotu přes Wi‑Fi. Při hodnotě '1' rozsvítí červenou LED; při hodnotě '0' ji zhasne.

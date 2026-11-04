@@ -1,2 +1,3 @@
-Out: Při změně stavu tlačítka odešle jeho hodnotu ('0' nebo '1') přes UART do druhé jednotky Pico.
-In: Přijímá hodnotu přes UART a rozsvítí červenou LED při stisknutém tlačítku ('0'); při uvolněném tlačítku ('1') ji zhasne.
+Out: Při změně stavu tlačítka odešle jeho hodnotu ('0' nebo '1') přes UART do Pi 4.
+Between: Přijímá hodnotu přes UART a přeposílá ji do druhé jednotky Pico. LED lze ovládat také prostřednictvím webové stránky.
+In: Přijímá hodnotu přes UART. Při hodnotě '1' rozsvítí červenou LED; při hodnotě '0' ji zhasne.

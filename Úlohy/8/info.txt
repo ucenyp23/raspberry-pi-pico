@@ -1,1 +1,0 @@
-První řádek LCD zobrazuje text „Hello World“ a druhý řádek hodnotu „Count:“ následovanou počítadlem, které se přibližně každou sekundu zvýší o 1. LED matice zobrazuje poslední číslici počítadla (0–9).
